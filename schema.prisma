@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  image          String?
+  password       String?  // null for OAuth
+  role           Role     @default(FREE)
+  createdAt      DateTime @default(now())
+  generations    Generation[]
+  favorites      FavoriteModel[]
+  settings       Settings?
+}
+
+enum Role {
+  FREE
+  PRO
+}
+
+model Generation {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  prompt         String
+  negativePrompt String?
+  modelName      String
+  modelImage     String?
+  options        Json
+  imageUrl       String?
+  createdAt      DateTime @default(now())
+}
+
+model FavoriteModel {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  modelName  String
+  modelImage String?
+  details    String?
+}
+
+model Settings {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  theme        String   @default("light")
+  nsfwEnabled  Boolean  @default(false)
+}
